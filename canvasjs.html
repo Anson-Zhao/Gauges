@@ -1,0 +1,196 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <style>
+        #chartContainer {
+            width: 50%;
+            height: 370px;
+            position: relative;
+            /*border-style: solid;*/
+            /*border-width: 5px;*/
+        }
+        #myBar {
+            width: 0.1%;
+            height: 72.5%;
+            background-color: #4CAF50;
+            position: relative;
+            top: 12%;
+            left: 7.6%;
+        }
+        #g1, #g2, #g3 {
+            width:320px; height:320px;
+            display: inline-block;
+            margin: 1em;
+        }
+
+    </style>
+</head>
+<body>
+<div id="g1"></div>
+<div id="g2"></div>
+<div id="g3"></div>
+
+<div id="chartContainer"></div>
+<div id="demo"></div>
+
+<button onclick="move()">Click Me</button>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="raphael-2.1.4.min.js"></script>
+<script src="justgage.js"></script>
+<script>
+    var g1, g2, g3;
+
+    window.onload = function () {
+
+        var chart = new CanvasJS.Chart("chartContainer", {
+            animationEnabled: true,
+            zoomEnabled: true,
+            title:{
+                text: "Daily High Temperature at Different Beaches"
+            },
+            axisX: {
+                valueFormatString: "DD MMM,YY"
+            },
+            axisY: {
+                title: "Temperature (in °C)",
+                includeZero: false,
+                suffix: " °C"
+            },
+            legend:{
+                cursor: "pointer",
+                fontSize: 16,
+                itemclick: toggleDataSeries
+            },
+            toolTip:{
+                shared: true
+            },
+            data: [{
+                name: "Myrtle Beach",
+                type: "spline",
+                yValueFormatString: "#0.## °C",
+                showInLegend: true,
+                dataPoints: [
+                    { x: new Date(2017,6,24), y: 31 },
+                    { x: new Date(2017,6,25), y: 31 },
+                    { x: new Date(2017,6,26), y: 29 },
+                    { x: new Date(2017,6,27), y: 29 },
+                    { x: new Date(2017,6,28), y: 31 },
+                    { x: new Date(2017,6,29), y: 30 },
+                    { x: new Date(2017,6,30), y: 29 }
+                ]
+            },
+                {
+                    name: "Martha Vineyard",
+                    type: "spline",
+                    yValueFormatString: "#0.## °C",
+                    showInLegend: true,
+                    dataPoints: [
+                        { x: new Date(2017,6,24), y: 20 },
+                        { x: new Date(2017,6,25), y: 20 },
+                        { x: new Date(2017,6,26), y: 25 },
+                        { x: new Date(2017,6,27), y: 25 },
+                        { x: new Date(2017,6,28), y: 25 },
+                        { x: new Date(2017,6,29), y: 25 },
+                        { x: new Date(2017,6,30), y: 25 }
+                    ]
+                },
+                {
+                    name: "Nantucket",
+                    type: "spline",
+                    yValueFormatString: "#0.## °C",
+                    showInLegend: true,
+                    dataPoints: [
+                        { x: new Date(2017,6,24), y: 22 },
+                        { x: new Date(2017,6,25), y: 19 },
+                        { x: new Date(2017,6,26), y: 23 },
+                        { x: new Date(2017,6,27), y: 24 },
+                        { x: new Date(2017,6,28), y: 24 },
+                        { x: new Date(2017,6,29), y: 23 },
+                        { x: new Date(2017,6,30), y: 23 }
+                    ]
+                }]
+        });
+        chart.render();
+
+        function toggleDataSeries(e){
+            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                e.dataSeries.visible = false;
+            }
+            else{
+                e.dataSeries.visible = true;
+            }
+            chart.render();
+        }
+
+
+        g1 = new JustGage({
+            id: "g1",
+            // value: getRandomInt(0, 100),
+            min: 28,
+            max: 33,
+            name: "Myrtle Beach",
+            label: "Temperature"
+        });
+
+        g2 = new JustGage({
+            id: "g2",
+            // value: getRandomInt(0, 100),
+            min: 18,
+            max: 28,
+            title: "Martha Vineyard",
+            label: "Temperature"
+        });
+
+        g3 = new JustGage({
+            id: "g3",
+            // value: getRandomInt(0, 100),
+            min: 18,
+            max: 25,
+            title: "Nantucket",
+            label: "Temperature"
+        });
+    };
+
+
+
+    function move() {
+        $("#chartContainer").append($("<div id=\"myBar\"></div>"));
+        var elem = document.getElementById("myBar");
+        var pos = 7.6;
+        var v1 = [31, 31, 29, 29, 31, 30, 29];
+        var v2 = [20, 20, 25, 25, 25, 25, 25];
+        var v3 = [22, 19, 23, 24, 24, 23, 23];
+        var z = 0;
+
+        var d = new Date();
+        document.getElementById("demo").innerHTML += "start: " + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds() + "   ";
+
+        var id = setInterval(frame, 25);
+
+        function frame() {
+            if (pos >= 99) {
+
+                var d = new Date();
+                document.getElementById("demo").innerHTML += "end: " + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds() + "   " + "\n";
+
+                //alert(elem.style.left);
+                pos = 7.6;
+                elem.style.left = pos + '%';
+                z = 0;
+            } else {
+                pos = Math.round((pos + 0.1) * 10) / 10;
+                elem.style.left = pos + '%';
+
+                if (pos === Math.round(((7.6 + (99 - 7.6) / 7 / 2) + (99 - 7.6) / 7 * z) * 10) / 10) {
+                    g1.refresh(v1[z]);
+                    g2.refresh(v2[z]);
+                    g3.refresh(v3[z]);
+                    z++;
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>

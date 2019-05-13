@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        #container {
+            width: 50%;
+            height: 370px;
+            position: relative;
+            /*border-style: solid;*/
+            /*border-width: 5px;*/
+        }
+        #line-chart {
+            max-height: 700px;
+            max-width: 100%;
+            position: relative;
+        }
+        #myBar {
+            width: 0.1%;
+            height: 72.5%;
+            background-color: #4CAF50;
+            position: absolute;
+            top: 12%;
+            left: 7.6%;
+        }
+        #g1, #g2, #g3 {
+            width:320px; height:320px;
+            display: inline-block;
+            margin: 1em;
+        }
+        button {
+            position: relative;
+        }
+
+    </style>
+</head>
+<body>
+<div id="g1"></div>
+<div id="g2"></div>
+<div id="g3"></div>
+
+<div id="container">
+<!--<div id="chartContainer"></div>-->
+    <canvas id="line-chart" width= "800" height="450"></canvas>
+</div>
+
+<div id="demo"></div>
+<button onclick="move()">Click Me</button>
+
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="raphael-2.1.4.min.js"></script>
+<script src="justgage.js"></script>
+
+<script>
+    var g1, g2, g3, chart;
+
+    var set1 = [];
+
+    window.onload = function () {
+
+        chart = new Chart(document.getElementById("line-chart"), {
+            type: 'line',
+            data: {
+                labels: ["24 Jul, 17", "25 Jul, 17", "26 Jul, 17", "27 Jul, 17", "28 Jul, 17", "29 Jul, 17", "30 Jul, 17"],
+                datasets: [{
+                    data: set1 = [31, 31, 29, 29, 31, 30, 29],
+                    label: "Myrtle Beach",
+                    borderColor: "#3e95cd",
+                    fill: false
+                }, {
+                    data: [20, 20, 25, 25, 25, 25, 25],
+                    label: "Martha Vineyard",
+                    borderColor: "#8e5ea2",
+                    fill: false
+                }, {
+                    data: [22, 19, 23, 24, 24, 23, 23],
+                    label: "Nantucket",
+                    borderColor: "#3cba9f",
+                    fill: false
+                    // }, {
+                    //     data: [40,20,10,16,24,38,74,167,508,784],
+                    //     label: "Latin America",
+                    //     borderColor: "#e8c3b9",
+                    //     fill: false
+                    // }, {
+                    //     data: [6,3,2,2,7,26,82,172,312,433],
+                    //     label: "North America",
+                    //     borderColor: "#c45850",
+                    //     fill: false
+                }
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'Daily High Temperature at Different Beaches'
+                },
+                scales: {
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Temperature (in °C)",
+                            includeZero: false,
+                            suffix: " °C"
+                        }
+                    }]
+                },
+                animationEnabled: true,
+                zoomEnabled: true
+            }
+        });
+
+        chart.render();
+
+        function toggleDataSeries(e){
+            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                e.dataSeries.visible = false;
+            }
+            else{
+                e.dataSeries.visible = true;
+            }
+            chart.render();
+        }
+
+        g1 = new JustGage({
+            id: "g1",
+            // value: getRandomInt(0, 100),
+            min: 28,
+            max: 33,
+            title: "Myrtle Beach",
+            label: "Temperature"
+        });
+
+        g2 = new JustGage({
+            id: "g2",
+            // value: getRandomInt(0, 100),
+            min: 18,
+            max: 28,
+            title: "Martha Vineyard",
+            label: "Temperature"
+        });
+
+        g3 = new JustGage({
+            id: "g3",
+            // value: getRandomInt(0, 100),
+            min: 18,
+            max: 25,
+            title: "Nantucket",
+            label: "Temperature"
+        });
+
+    };
+
+    function move() {
+        $("#container").append($("<div id=\"myBar\"></div>"));
+        var elem = document.getElementById("myBar");
+        var pos = 7.6;
+        var v1 = set1;
+        var v2 = [20, 20, 25, 25, 25, 25, 25];
+        var v3 = [22, 19, 23, 24, 24, 23, 23];
+        var z = 0;
+
+        var d = new Date();
+        document.getElementById("demo").innerHTML += "start: " + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds() + "   ";
+
+        var id = setInterval(frame, 25);
+
+        function frame() {
+            if (pos >= 99) {
+
+                var d = new Date();
+                document.getElementById("demo").innerHTML += "end: " + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds() + "   " + "\n";
+
+                //alert(elem.style.left);
+                pos = 7.6;
+                elem.style.left = pos + '%';
+                z = 0;
+            } else {
+                pos = Math.round((pos + 0.1) * 10) / 10;
+                elem.style.left = pos + '%';
+
+                if (pos === Math.round(((7.6 + (99 - 7.6) / 7 / 2) + (99 - 7.6) / 7 * z) * 10) / 10) {
+                    g1.refresh(v1[z]);
+                    g2.refresh(v2[z]);
+                    g3.refresh(v3[z]);
+                    z++;
+                }
+            }
+        }
+    }
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <style>
+        #chartContainer {
+            width: 50%;
+            height: 370px;
+            position: relative;
+            /*border-style: solid;*/
+            /*border-width: 5px;*/
+        }
+        #myBar {
+            width: 0.1%;
+            height: 72.5%;
+            background-color: #4CAF50;
+            position: relative;
+            top: 12%;
+            left: 7.6%;
+        }
+        #g1, #g2, #g3 {
+            width:320px; height:320px;
+            display: inline-block;
+            margin: 1em;
+        }
+
+    </style>
+</head>
+<body>
+<div id="g1"></div>
+<div id="chartContainer" style="height: 370px; width: 100%;"></div>
+
+<button id="clickBait" onclick="move()">Click Me</button>
+
+<script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+<script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+<script src="raphael-2.1.4.min.js"></script>
+<script src="justgage.js"></script>
+</body>
+    <script>
+        var dataPoints = [];
+        var dataPoints1 = [];
+
+        window.onload = function() {
+
+            var options =  {
+                animationEnabled: true,
+                zoomEnabled: true,
+                theme: "light2",
+                title: {
+                    text: "Daily Sales Data"
+                },
+                axisX: {
+                    valueFormatString: "DD MMM YYYY"
+                },
+                axisY: {
+                    title: "USD",
+                    titleFontSize: 24,
+                    includeZero: false
+                },
+                data: [{
+                    type: "spline",
+                    yValueFormatString: "$#,###.##",
+                    dataPoints: dataPoints
+                }]
+            };
+
+            g1 = new JustGage({
+                id: "g1",
+                // value: getRandomInt(0, 100),
+                min: 25,
+                max: 37,
+                title: "Myrtle Beach",
+                label: "Temperature"
+            });
+
+
+            // $("#clickBait").click(dynamics);
+            // alert("jalkdj");
+
+
+            $.getJSON("./testData.json", addData);
+
+            function addData(data) {
+                for (var i = 0; i < data.length; i++) {
+                    dataPoints.push({
+                        x: new Date(data[i].date),
+                        y: data[i].units
+                    });
+                    dataPoints1.push({
+                        y: data[i].units
+                    });
+                }
+                $("#chartContainer").CanvasJSChart(options);
+
+                function dynamics(data) {
+                    var updateInterval = 1000;
+                    var dataLength = 0;
+
+                    var updateChart = function (count) {
+                        count = count || 1;
+
+                        for (var j = 0; j < count; j++) {
+                            for (var i = 0; i < data.length; i++) {
+                                dataPoints.push({
+                                    x: new Date(data[i].date),
+                                    y: data[i].units
+                                });
+                            }
+                        }
+
+                        if (dataPoints.length > dataLength) {
+                            g1.refresh(y);
+                        }
+
+                    };
+
+                    updateChart(dataLength);
+                    setInterval(function(){updateChart()}, updateInterval);
+                }
+            }
+
+        };
+
+        function move() {
+            $("#chartContainer").append($("<div id=\"myBar\"></div>"));
+            var elem = document.getElementById("myBar");
+            var pos = 7.6;
+            var v1 = dataPoints1;
+            var z = 0;
+
+            var d = new Date();
+            document.getElementById("demo").innerHTML += "start: " + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds() + "   ";
+
+            var id = setInterval(frame, 25);
+
+            function frame() {
+                if (pos >= 99) {
+
+                    var d = new Date();
+                    document.getElementById("demo").innerHTML += "end: " + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds() + "   " + "\n";
+
+                    //alert(elem.style.left);
+                    pos = 7.6;
+                    elem.style.left = pos + '%';
+                    z = 0;
+                } else {
+                    pos = Math.round((pos + 0.1) * 10) / 10;
+                    elem.style.left = pos + '%';
+
+                    if (pos === Math.round(((7.6 + (99 - 7.6) / 7 / 2) + (99 - 7.6) / 7 * z) * 10) / 10) {
+                        g1.refresh(v1[z]);
+                        z++;
+                    }
+                }
+            }
+        }
+
+    </script>
+</html>

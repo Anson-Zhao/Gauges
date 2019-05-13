@@ -1,0 +1,279 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <style>
+        #chartContainer {
+            width: 1000px;
+            height: 370px;
+            position: relative;
+            /*border-style: solid;*/
+            /*border-width: 5px;*/
+        }
+        #myBar {
+            width: 0.1%;
+            height: 72.5%;
+            background-color: #4CAF50;
+            position: relative;
+            top: 12%;
+            /*left: 7.6%;*/
+        }
+        #g1, #g2, #g3 {
+            width:320px; height:320px;
+            display: inline-block;
+            margin: 1em;
+        }
+
+    </style>
+</head>
+<body>
+<div id="g1"></div>
+<div id="g2"></div>
+<div id="g3"></div>
+
+<div id="chartContainer"></div>
+<div id="demo"></div>
+
+<button onclick="barMove();">Click Me</button>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.2.9/justgage.min.js"></script>
+<script>
+    var dps = [
+        { x: new Date(2017,6,24), y: 31 },
+        { x: new Date(2017,6,25), y: 31 },
+        { x: new Date(2017,6,26), y: 29 },
+        { x: new Date(2017,6,27), y: 29 },
+        { x: new Date(2017,6,28), y: 31 },
+        { x: new Date(2017,6,29), y: 30 },
+        { x: new Date(2017,6,30), y: 29 }
+    ];
+    var dps2 = [
+        { x: new Date(2017,6,24), y: 20 },
+        { x: new Date(2017,6,25), y: 20 },
+        { x: new Date(2017,6,26), y: 25 },
+        { x: new Date(2017,6,27), y: 25 },
+        { x: new Date(2017,6,28), y: 25 },
+        { x: new Date(2017,6,29), y: 25 },
+        { x: new Date(2017,6,30), y: 25 }
+    ];
+    var dps3 = [
+        { x: new Date(2017,6,24), y: 22 },
+        { x: new Date(2017,6,25), y: 19 },
+        { x: new Date(2017,6,26), y: 23 },
+        { x: new Date(2017,6,27), y: 24 },
+        { x: new Date(2017,6,28), y: 24 },
+        { x: new Date(2017,6,29), y: 23 },
+        { x: new Date(2017,6,30), y: 23 }
+    ];
+
+    var g1, g2, g3,
+        barPace = 0.1,
+        barPos = BeginBarPos = 7.5,
+        firstDataBarPos = 14.3,
+        lastDataBarPos = 92.5,
+        EndBarPos = 99,
+        FirstDataX = dps[0].x.getTime(),
+        LastDataX = dps[dps.length-1].x.getTime(),
+        minXValue = InitialminXValue = FirstDataX,
+        maxXValue = InitialmaxXValue = LastDataX,
+        barX = InitialbarX = InitialminXValue,
+        xPace = (maxXValue - minXValue) * barPace / (lastDataBarPos - firstDataBarPos);
+
+    window.onload = function () {
+
+        var chart = new CanvasJS.Chart("chartContainer", {
+            animationEnabled: true,
+            zoomEnabled: true,
+            zoomType: "xy",
+            rangeChanged: function(e) {
+                if(e.trigger !== "reset") {
+                    minXValue = new Date(e.axisX[0].viewportMinimum).getTime();
+                    maxXValue = new Date(e.axisX[0].viewportMaximum).getTime();
+                    minYValue = e.axisY[0].viewportMinimum;
+                    maxYValue = e.axisY[0].viewportMaximum;
+
+                    barPos = firstDataBarPos = BeginBarPos;
+                    lastDataBarPos = EndBarPos;
+                    barX = InitialbarX = minXValue;
+                    xPace = (maxXValue - minXValue) * barPace / (lastDataBarPos - firstDataBarPos);
+
+                    barMove();
+
+                } else {
+                    minXValue = InitialminXValue;
+                    maxXValue = InitialmaxXValue;
+                    minYValue = "";
+                    maxYValue = "";
+
+                    barPos = BeginBarPos;
+                    firstDataBarPos = 14.3;
+                    lastDataBarPos = 92.5;
+                    barX = InitialbarX = minXValue;
+                    xPace = (maxXValue - minXValue) * barPace / (lastDataBarPos - firstDataBarPos);
+
+                    barMove();
+
+                }
+            },
+            title:{
+                text: "Daily High Temperature at Different Beaches"
+            },
+            axisX: {
+                valueFormatString: "DD MMM,YY"
+            },
+            axisY: {
+                title: "Temperature (in °C)",
+                includeZero: false,
+                suffix: " °C"
+            },
+            legend:{
+                cursor: "pointer",
+                fontSize: 16,
+                itemclick: toggleDataSeries
+            },
+            toolTip:{
+                shared: true
+            },
+            data: [{
+                name: "Myrtle Beach",
+                type: "spline",
+                yValueFormatString: "#0.## °C",
+                showInLegend: true,
+                dataPoints: dps
+            },
+                {
+                    name: "Martha Vineyard",
+                    type: "spline",
+                    yValueFormatString: "#0.## °C",
+                    showInLegend: true,
+                    dataPoints: dps2
+                },
+                {
+                    name: "Nantucket",
+                    type: "spline",
+                    yValueFormatString: "#0.## °C",
+                    showInLegend: true,
+                    dataPoints: dps3
+                }
+            ]
+        });
+
+        chart.render();
+
+
+        function toggleDataSeries(e){
+            if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                e.dataSeries.visible = false;
+            }
+            else{
+                e.dataSeries.visible = true;
+            }
+            chart.render();
+        }
+
+
+        g1 = new JustGage({
+            id: "g1",
+            // value: getRandomInt(0, 100),
+            min: 28,
+            max: 33,
+            title: "Myrtle Beach",
+            label: "Temperature"
+        });
+
+        g2 = new JustGage({
+            id: "g2",
+            // value: getRandomInt(0, 100),
+            min: 18,
+            max: 28,
+            title: "Martha Vineyard",
+            label: "Temperature"
+        });
+
+        g3 = new JustGage({
+            id: "g3",
+            // value: getRandomInt(0, 100),
+            min: 18,
+            max: 25,
+            title: "Nantucket",
+            label: "Temperature"
+        });
+    };
+
+
+    function barMove() {
+        $("#myBar").remove();
+        $("#chartContainer").append($("<div id=\"myBar\"></div>"));
+        var elem = document.getElementById("myBar");
+        var v1, v2, v3;
+        var id = setInterval(frame, 25);
+
+        function frame() {
+            if (barPos >= EndBarPos) {
+                barPos = BeginBarPos;
+                elem.style.left = barPos + '%';
+                barX = InitialbarX;
+            } else {
+                if (barPos < firstDataBarPos) {
+                    barPos = Math.round((barPos + barPace) * 10) / 10;
+                    // alert(barPos);
+                    elem.style.left = barPos + '%';
+                    // console.log(" < firstDataBarPos: " + barPos);
+
+                    v1 = 0;
+                    v2 = 0;
+                    v3 = 0;
+                    g1.refresh(v1);
+                    g2.refresh(v2);
+                    g3.refresh(v3);
+                } else {
+                    barPos = Math.round((barPos + barPace) * 10) / 10;
+                    // alert(barPos);
+                    elem.style.left = barPos + '%';
+                    // console.log("> firstDataBarPos: " + barPos);
+
+                    barX += xPace;
+
+                    // console.log(xPace);
+                    // console.log(barX);
+                    // alert(barPos);
+                    // var distance = dps[1].x.getTime() - dps[0].x.getTime();
+                    // console.log (distance);
+
+                    if (barX < FirstDataX) {
+                        // alert ("0");
+                        v1 = 0;
+                        v2 = 0;
+                        v3 = 0;
+                    } else if (barX >= LastDataX){
+                        // alert ("30");
+                        v1 = dps[dps.length-1].y;
+                        v2 = dps2[dps2.length-1].y;
+                        v3 = dps3[dps3.length-1].y;
+                    } else {
+                        // v1 = dps[dps.length-1].y;
+                        // v2 = dps2[dps2.length-1].y;
+                        // v3 = dps3[dps3.length-1].y;
+                        // alert ("Check");
+                        for (var i = 1; i < dps.length; i++) {
+                            if (barX >= dps[i-1].x.getTime() && barX < dps[i].x.getTime() || barX >= dps2[i-1].x.getTime() && barX < dps2[i].x.getTime() || barX >= dps3[i-1].x.getTime() && barX < dps3[i].x.getTime()) {
+                                v1 = dps[i-1].y;
+                                v2 = dps2[i-1].y;
+                                v3 = dps3[i-1].y;
+                                // console.log(new Date(barX));
+                                // alert(v1);
+                            }
+                        }
+                    }
+                    g1.refresh(v1);
+                    g2.refresh(v2);
+                    g3.refresh(v3);
+                }
+            }
+        }
+    }
+
+</script>
+</body>
+</html>

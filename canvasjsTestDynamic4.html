@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <style>
+        #chartContainer {
+            width: 50%;
+            height: 370px;
+            position: relative;
+            /*border-style: solid;*/
+            /*border-width: 5px;*/
+        }
+        #myBar {
+            width: 0.1%;
+            height: 72.5%;
+            background-color: #4CAF50;
+            position: relative;
+            top: 12%;
+            left: 7.6%;
+        }
+        #g1, #g2, #g3 {
+            width:320px; height:320px;
+            display: inline-block;
+            margin: 1em;
+        }
+
+    </style>
+</head>
+<body>
+<div id="g1"></div>
+<div id="chartContainer" style="height: 370px; width: 100%;"></div>
+
+<button id="clickBait">Click Me</button>
+
+<script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+<script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+<script src="raphael-2.1.4.min.js"></script>
+<script src="justgage.js"></script>
+</body>
+    <script>
+        window.onload = function() {
+
+            var dataPoints = [];
+
+            var chart = new CanvasJS.Chart("chartContainer", {
+                theme: "light2",
+                title: {
+                    text: "Live Data"
+                },
+                data: [{
+                    type: "line",
+                    dataPoints: dataPoints
+                }]
+            });
+            updateData();
+
+// Initial Values
+            var xValue = 0;
+            var yValue = 10;
+            var newDataCount = 6;
+
+            function addData(data) {
+                if(newDataCount !== 1) {
+                    $.each(data, function(key, value) {
+                        dataPoints.push({x: value[0], y: parseInt(value[1])});
+                        xValue++;
+                        yValue = parseInt(value[1]);
+                    });
+                } else {
+                    //dataPoints.shift();
+                    dataPoints.push({x: data[0][0], y: parseInt(data[0][1])});
+                    xValue++;
+                    yValue = parseInt(data[0][1]);
+                }
+
+                newDataCount = 1;
+                chart.render();
+                setTimeout(updateData, 1500);
+            }
+
+            function updateData() {
+                $.getJSON("./testData.php?xstart="+xValue+"&ystart="+yValue+"&length="+newDataCount+"type=json", addData);
+            }
+
+        }    </script>
+</html>
